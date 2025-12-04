@@ -1,0 +1,668 @@
+name: time-bending-horror-journal
+version: 1.0.0
+description: |
+  A single-page web application that creates a haunting user experience through temporal distortion.
+  The journal interface exists outside normal time—entries appear from the future, past entries 
+  rewrite themselves, and timelines glitch and branch. The interface feels like a cursed artifact 
+  that defies temporal logic while remaining usable and engaging.
+
+tech_stack:
+  framework: React 18
+  language: TypeScript
+  build_tool: Vite
+  styling: Tailwind CSS
+  animation: Framer Motion
+  state_management: Zustand
+  persistence: localStorage
+
+non_functional_requirements:
+  performance:
+    response_time: "< 100ms for user interactions"
+    frame_rate: "> 30 FPS during animations"
+    bundle_size: "< 500KB gzipped"
+  
+  responsiveness:
+    breakpoints:
+      - mobile: "320px - 768px"
+      - tablet: "768px - 1024px"
+      - desktop: "> 1024px"
+    layout: "Adaptive grid that maintains usability across all screen sizes"
+  
+  theme:
+    color_scheme: dark
+    palette:
+      background_primary: "#0a0a0f"
+      background_secondary: "#151520"
+      background_tertiary: "#1f1f2e"
+      text_primary: "#e0e0e8"
+      text_secondary: "#a0a0b0"
+      accent_future: "#6366f1"
+      accent_rewriting: "#ef4444"
+      accent_branch: "#8b5cf6"
+      glow: "#60a5fa"
+    typography:
+      primary_font: "Inter, sans-serif"
+      mono_font: "JetBrains Mono, monospace"
+      display_font: "Playfair Display, serif"
+  
+  accessibility:
+    keyboard_navigation: true
+    screen_reader_support: true
+    reduced_motion_support: true
+    focus_indicators: "Visible even with effects active"
+    aria_labels: "All interactive elements"
+
+components:
+  - name: LayoutShell
+    path: src/components/layout/AppLayout.tsx
+    description: Root layout container that orchestrates all major sections
+    responsibilities:
+      - Manage viewport structure
+      - Provide consistent spacing and grid
+      - Handle responsive breakpoints
+    props:
+      children: ReactNode
+    
+  - name: LandingScreen
+    path: src/features/landing/LandingScreen.tsx
+    description: Initial experience with time-glitch introduction
+    responsibilities:
+      - Display title with glitch typography
+      - Show atmospheric subtitle
+      - Provide entry point to journal
+      - Auto-transition on user interaction
+    state:
+      isAnimating: boolean
+    effects:
+      - Glitch text animation on title
+      - Pulsing button with flicker
+      - Background temporal distortion
+    
+  - name: JournalShell
+    path: src/features/journal/JournalView.tsx
+    description: Main container for journal experience
+    responsibilities:
+      - Layout timeline, entry list, and composer
+      - Coordinate between child components
+      - Manage responsive layout
+    layout:
+      left: TimelineRibbon
+      center: JournalEntryList
+      right: EntryComposer
+    
+  - name: JournalEntryList
+    path: src/features/journal/EntryList.tsx
+    description: Scrollable list of all journal entries
+    responsibilities:
+      - Render EntryCard components
+      - Handle empty state
+      - Implement stagger animation on mount
+      - Manage scroll behavior
+    props:
+      entries: JournalEntry[]
+      onEntrySelect: (id: string) => void
+    animations:
+      - Stagger children on mount
+      - Smooth scroll to selected entry
+    
+  - name: JournalEntryCard
+    path: src/features/journal/EntryCard.tsx
+    description: Individual entry display with temporal effects
+    responsibilities:
+      - Display entry content and metadata
+      - Show temporal status (past/future/rewriting)
+      - Apply appropriate visual styling
+      - Handle selection interaction
+    props:
+      entry: JournalEntry
+      isRewriting: boolean
+      isFuture: boolean
+      isSelected: boolean
+      onClick: () => void
+    visual_states:
+      past: "Normal appearance with subtle glow"
+      future: "Inverted colors, ethereal glow, future timestamp"
+      rewriting: "Glitching text, red accent"
+      branch: "Purple accent, offset position"
+    
+  - name: ActiveEntryPanel
+    path: src/features/journal/ActiveEntry.tsx
+    description: Expanded view of selected entry (optional component)
+    responsibilities:
+      - Show full entry content
+      - Display entry metadata
+      - Provide edit/delete actions
+    props:
+      entry: JournalEntry | null
+      onClose: () => void
+    
+  - name: EntryComposer
+    path: src/features/journal/EntryComposer.tsx
+    description: Text input area for creating/editing entries
+    responsibilities:
+      - Accept user text input
+      - Validate input (non-empty)
+      - Submit new entries
+      - Clear after submission
+      - Apply glitch effects when active
+    props:
+      onSubmit: (text: string) => void
+      isGlitching: boolean
+    features:
+      - Character count display
+      - Placeholder text that occasionally changes
+      - Submit button with temporal pulse
+      - Input validation for whitespace
+    
+  - name: TimelineRibbon
+    path: src/features/timeline/TimelineRibbon.tsx
+    description: Vertical timeline visualization with branches
+    responsibilities:
+      - Render vertical time spine
+      - Position entry markers by timestamp
+      - Display timeline branches
+      - Show current time indicator
+      - Handle marker click interactions
+    props:
+      entries: JournalEntry[]
+      branches: TimelineBranch[]
+      currentTime: Date
+    visual_elements:
+      - Vertical line (main timeline)
+      - Entry markers (dots/circles)
+      - Branch paths (SVG curves)
+      - Current time indicator (horizontal line)
+      - Glitch distortions (periodic)
+    
+  - name: TimeAnomalyPanel
+    path: src/features/effects/AnomalyPanel.tsx
+    description: UI panel showing active anomalies (optional)
+    responsibilities:
+      - Display list of active temporal anomalies
+      - Show anomaly types and affected entries
+      - Provide visual feedback for anomaly triggers
+    props:
+      anomalies: Anomaly[]
+    
+  - name: GlitchOverlayLayer
+    path: src/features/effects/AnomalyEffectsLayer.tsx
+    description: Overlay layer for visual glitch effects
+    responsibilities:
+      - Render active glitch effects
+      - Position absolutely over viewport
+      - Not block user interactions (pointer-events: none)
+      - Scale effects based on intensity
+    props:
+      intensity: 0 | 1 | 2 | 3
+      isActive: boolean
+    effects:
+      - ScreenTear: Horizontal displacement
+      - ColorAberration: RGB channel separation
+      - TemporalRipple: Wave distortion
+      - StaticNoise: Visual noise overlay
+      - Scanlines: CRT-style lines
+    
+  - name: SettingsDrawer
+    path: src/features/settings/SettingsPanel.tsx
+    description: Slide-in panel for user controls
+    responsibilities:
+      - Adjust anomaly intensity (0-3)
+      - Toggle reduced motion
+      - Reset journal data
+      - Close/open drawer
+    props:
+      intensity: 0 | 1 | 2 | 3
+      onIntensityChange: (intensity: number) => void
+      onClose: () => void
+    features:
+      - Slide-in animation from right
+      - Intensity slider with labels
+      - Reset button with confirmation
+      - Styled as "ritual configuration"
+
+data_models:
+  JournalEntry:
+    description: Core data structure for a journal entry
+    fields:
+      id:
+        type: string
+        description: Unique identifier (UUID)
+        required: true
+      
+      createdAt:
+        type: Date
+        description: Real timestamp when entry was created
+        required: true
+      
+      apparentTime:
+        type: Date
+        description: Timestamp the entry claims to be from (may be future)
+        required: true
+        note: "This is the displayTimestamp that can differ from createdAt"
+      
+      content:
+        type: string
+        description: The entry text content
+        required: true
+        validation: "Non-empty, trimmed"
+      
+      originalContent:
+        type: string
+        description: Original text before any rewrites
+        required: true
+        note: "Preserved to detect changes"
+      
+      anomalyType:
+        type: enum
+        values: [none, future, altered_past, parallel_branch]
+        description: Type of temporal anomaly affecting this entry
+        required: true
+        default: none
+      
+      parentId:
+        type: string | null
+        description: ID of parent entry if this is in a branch
+        required: false
+        default: null
+      
+      branchId:
+        type: string | null
+        description: ID of timeline branch this entry belongs to
+        required: false
+        default: null
+        note: "null means main timeline"
+      
+      version:
+        type: number
+        description: Version number, increments with each rewrite
+        required: true
+        default: 1
+      
+      isRewritten:
+        type: boolean
+        description: Whether this entry has been rewritten
+        required: true
+        default: false
+  
+  TimelineBranch:
+    description: Represents an alternate timeline path
+    fields:
+      id:
+        type: string
+        description: Unique identifier
+        required: true
+      
+      name:
+        type: string
+        description: Display name (e.g., "Alternate Path α")
+        required: true
+      
+      originTimestamp:
+        type: Date
+        description: When this branch diverges from main timeline
+        required: true
+      
+      entryIds:
+        type: string[]
+        description: Array of entry IDs in this branch
+        required: true
+        default: []
+      
+      visualOffset:
+        type: number
+        description: Horizontal offset for rendering (pixels)
+        required: true
+        default: 0
+  
+  AppState:
+    description: Global application state (Zustand store)
+    fields:
+      # UI State
+      currentSection:
+        type: enum
+        values: [landing, journal, settings]
+        description: Currently visible section
+        default: landing
+      
+      selectedEntryId:
+        type: string | null
+        description: ID of currently selected entry
+        default: null
+      
+      anomalyIntensity:
+        type: number
+        values: [0, 1, 2, 3]
+        description: Intensity level for temporal effects
+        default: 2
+        labels:
+          0: "Disabled"
+          1: "Low"
+          2: "Medium"
+          3: "High"
+      
+      # Data
+      entries:
+        type: JournalEntry[]
+        description: All journal entries
+        default: []
+      
+      branches:
+        type: TimelineBranch[]
+        description: All timeline branches
+        default: []
+      
+      # Effects State
+      activeGlitches:
+        type: string[]
+        description: IDs of currently active glitch effects
+        default: []
+      
+      rewritingEntryIds:
+        type: string[]
+        description: IDs of entries currently being rewritten
+        default: []
+    
+    actions:
+      addEntry:
+        params: [text: string]
+        returns: void
+        description: Create new journal entry with validation
+      
+      updateEntry:
+        params: [id: string, text: string]
+        returns: void
+        description: Update existing entry content
+      
+      deleteEntry:
+        params: [id: string]
+        returns: void
+        description: Remove entry from journal
+      
+      selectEntry:
+        params: [id: string | null]
+        returns: void
+        description: Set selected entry
+      
+      triggerRewrite:
+        params: [entryId: string]
+        returns: void
+        description: Initiate rewrite effect on entry
+      
+      createBranch:
+        params: [originTimestamp: Date]
+        returns: string
+        description: Create new timeline branch, returns branch ID
+      
+      setAnomalyIntensity:
+        params: [intensity: 0 | 1 | 2 | 3]
+        returns: void
+        description: Update effect intensity level
+      
+      setCurrentSection:
+        params: [section: 'landing' | 'journal' | 'settings']
+        returns: void
+        description: Navigate to different section
+      
+      resetJournal:
+        params: []
+        returns: void
+        description: Clear all entries and reset state
+
+core_behaviors:
+  creating_entries:
+    description: User creates a new journal entry
+    flow:
+      - User types text in EntryComposer
+      - User clicks submit or presses Enter
+      - Validate input (non-empty, non-whitespace)
+      - Generate unique ID and timestamp
+      - Randomly determine if entry should be "future" (10-20% chance)
+      - If future, set apparentTime to 1-6 hours ahead
+      - Add entry to store
+      - Persist to localStorage
+      - Clear composer input
+      - Animate new entry into list
+    validation:
+      - Text must not be empty
+      - Text must not be only whitespace
+      - Trim whitespace from content
+  
+  triggering_anomalies:
+    description: System autonomously triggers temporal anomalies
+    triggers:
+      future_entry:
+        probability: "10-20% on entry creation"
+        effect: "Set apparentTime to future timestamp"
+        visual: "Inverted colors, ethereal glow"
+      
+      rewrite_past:
+        probability: "Based on intensity, every 30-90 seconds"
+        effect: "Select random existing entry, change content"
+        visual: "Glitch text animation, red accent"
+        logic: |
+          - Select random entry from past entries
+          - Generate alternative text content
+          - Animate character-by-character change
+          - Update content but preserve ID, timestamp
+          - Increment version number
+          - Set isRewritten flag
+      
+      create_branch:
+        probability: "After 5+ entries, 15% chance per new entry"
+        effect: "Create alternate timeline path"
+        visual: "Purple branch curving from main timeline"
+        logic: |
+          - Select random timestamp from existing entries
+          - Create new TimelineBranch with origin at that time
+          - Clone 1-3 entries into branch with modifications
+          - Assign entries to branch via branchId
+      
+      visual_glitch:
+        probability: "Based on intensity, every 5-15 seconds"
+        effect: "Trigger screen distortion effect"
+        visual: "Screen tear, color aberration, ripples"
+        logic: |
+          - Randomly select glitch type
+          - Calculate duration (200-1000ms)
+          - Add to activeGlitches array
+          - Render effect in GlitchOverlayLayer
+          - Remove after duration expires
+    
+    intensity_scaling:
+      0: "No anomalies"
+      1: "Rare anomalies, subtle effects"
+      2: "Moderate frequency, noticeable effects"
+      3: "Frequent anomalies, intense effects"
+  
+  local_persistence:
+    description: Save and load journal data from localStorage
+    storage_key: "time-journal-storage"
+    persisted_data:
+      - entries
+      - branches
+      - anomalyIntensity
+    not_persisted:
+      - currentSection (always start at landing)
+      - selectedEntryId
+      - activeGlitches
+      - rewritingEntryIds
+    
+    serialization:
+      format: JSON
+      date_handling: "Convert Date objects to ISO strings"
+      validation: "Validate required fields on load"
+      error_handling: "Graceful degradation to empty state"
+    
+    operations:
+      save:
+        trigger: "After any state change to persisted data"
+        debounce: "300ms to avoid excessive writes"
+      
+      load:
+        trigger: "On application initialization"
+        fallback: "Empty state if no data or parse error"
+        migration: "Handle version changes gracefully"
+
+ui_requirements:
+  animated_transitions:
+    section_changes:
+      type: "Fade + slide"
+      duration: 500ms
+      easing: "ease-in-out"
+    
+    entry_appearance:
+      type: "Stagger fade-in"
+      duration: 300ms
+      stagger_delay: 50ms
+    
+    entry_selection:
+      type: "Scale + highlight"
+      duration: 200ms
+    
+    composer_clear:
+      type: "Glitch transition"
+      duration: 150ms
+  
+  glitch_distortion_effects:
+    screen_tear:
+      description: "Horizontal displacement of screen sections"
+      duration: 200-500ms
+      intensity_scale: "Displacement distance"
+    
+    color_aberration:
+      description: "RGB channel separation"
+      duration: 300-800ms
+      intensity_scale: "Separation distance"
+    
+    temporal_ripple:
+      description: "Wave distortion emanating from center"
+      duration: 500-1000ms
+      intensity_scale: "Wave amplitude"
+    
+    static_noise:
+      description: "Visual noise overlay"
+      duration: 100-300ms
+      intensity_scale: "Opacity"
+    
+    text_glitch:
+      description: "Character scrambling and position jitter"
+      duration: 1000-2000ms
+      intensity_scale: "Scramble frequency"
+  
+  smooth_animations:
+    library: Framer Motion
+    principles:
+      - Use spring physics for natural movement
+      - Implement layout animations for position changes
+      - Apply exit animations for removed elements
+      - Respect reduced motion preferences
+    
+    performance:
+      - Use transform and opacity for animations
+      - Avoid animating layout properties when possible
+      - Implement will-change for animated elements
+      - Use GPU acceleration via transform3d
+    
+    unsettling_touches:
+      - Slight overshoot on springs
+      - Occasional unexpected timing
+      - Asymmetric easing curves
+      - Micro-delays that feel "wrong"
+
+development_phases:
+  phase_1_foundation:
+    tasks:
+      - Initialize Vite + React + TypeScript project
+      - Configure Tailwind with custom theme
+      - Set up Zustand store structure
+      - Implement localStorage persistence layer
+      - Create base type definitions
+  
+  phase_2_core_journal:
+    tasks:
+      - Build EntryComposer with validation
+      - Create EntryCard component
+      - Implement EntryList with animations
+      - Build basic TimelineRibbon
+      - Create JournalShell layout
+  
+  phase_3_temporal_effects:
+    tasks:
+      - Implement future entry generation
+      - Build entry rewriting system
+      - Create GlitchText component
+      - Implement anomaly trigger system
+      - Add timeline branches
+  
+  phase_4_visual_polish:
+    tasks:
+      - Create glitch effect components
+      - Build GlitchOverlayLayer
+      - Implement LandingScreen
+      - Add SettingsDrawer
+      - Refine all animations
+  
+  phase_5_optimization:
+    tasks:
+      - Performance optimization
+      - Accessibility features
+      - Responsive design refinement
+      - Cross-browser testing
+      - Final integration testing
+
+testing_strategy:
+  unit_tests:
+    framework: Vitest
+    coverage:
+      - Entry creation and validation
+      - Timestamp manipulation
+      - localStorage serialization
+      - Anomaly trigger logic
+      - Branch creation
+  
+  property_based_tests:
+    framework: fast-check
+    properties:
+      - localStorage round-trip preserves data
+      - Entry timestamps maintain ordering
+      - Rewrite preserves entry identity
+      - Glitch effects are temporary
+      - Branch entries reference valid branches
+  
+  integration_tests:
+    framework: Vitest + Testing Library
+    scenarios:
+      - Complete user flow from landing to journal
+      - Entry creation and persistence
+      - Anomaly triggering and effects
+      - Settings changes affect behavior
+  
+  manual_testing:
+    focus:
+      - Visual effect quality
+      - Emotional impact
+      - Usability during heavy glitching
+      - Performance on different devices
+
+deployment:
+  build_command: "npm run build"
+  output_directory: "dist"
+  environment_variables: []
+  hosting_suggestions:
+    - Vercel
+    - Netlify
+    - GitHub Pages
+  
+  optimization:
+    - Code splitting by route/feature
+    - Asset optimization (images, fonts)
+    - Gzip compression
+    - Cache headers for static assets
+
+notes:
+  - "The horror comes from subtle wrongness, not jump scares"
+  - "Usability must never be sacrificed for effects"
+  - "Every anomaly should feel intentional, not buggy"
+  - "The journal should feel alive and aware"
+  - "Time distortion should escalate gradually"
+  - "Effects should be toggleable for accessibility"
